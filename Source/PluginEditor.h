@@ -18,5 +18,15 @@ private:
     // access the processor object that created it.
     AudioPluginAudioProcessor& processorRef;
 
+    // UI Components
+    juce::Slider driveSlider;
+    juce::Label driveLabel;
+    juce::Slider asymmetrySlider;
+    juce::Label asymmetryLabel;
+
+    // Parameter attachments
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> driveAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> asymmetryAttachment;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };
