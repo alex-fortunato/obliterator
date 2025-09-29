@@ -27,6 +27,9 @@ AudioPluginAudioProcessor::createParameterLayout()
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
             "asymmetry", "Asymmetry",
             juce::NormalisableRange<float>(-1.0f, 1.0f, 0.01f), 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+            "suboctave", "Sub Octave",
+            juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.0f));
     return {params.begin(), params.end()};
 }
 
@@ -143,6 +146,7 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
 
     currentDrive = *parameters.getRawParameterValue("drive");
     currentAsymmetry = *parameters.getRawParameterValue("asymmetry");
+    currentSubOctave = *parameters.getRawParameterValue("suboctave");
 
     auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
@@ -172,12 +176,13 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
         for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
         {
             float inputSample = channelData[sample];
+            float processedSample;
 
             // At drive=1.0: pass through unaffected
             // Above drive=1.0: apply asymmetric tanh saturation
             if (currentDrive <= 1.0f)
             {
-                channelData[sample] = inputSample; // Unity gain, no processing
+                processedSample = inputSample; // Unity gain, no processing
             }
             else
             {
@@ -187,8 +192,36 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
 
                 // Remove DC offset caused by asymmetry
                 float dcOffset = std::tanh(currentDrive * currentAsymmetry * 0.5f);
-                channelData[sample] = distortedSample - dcOffset;
+                processedSample = distortedSample - dcOffset;
             }
+
+            // Sub-octave generation using octave divider
+            float subOctaveSample = 0.0f;
+            if (currentSubOctave > 0.0f && channel < 2)
+            {
+                auto& state = octaveState[channel];
+
+                // Zero-crossing detection with hysteresis
+                bool currentPositive = processedSample > 0.0f;
+
+                // Flip the flip-flop on positive-going zero crossings
+                if (currentPositive && !state.lastPositive)
+                {
+                    state.flipFlop = !state.flipFlop;
+                }
+                state.lastPositive = currentPositive;
+
+                // Generate sub-octave square wave
+                float rawSubOctave = state.flipFlop ? 1.0f : -1.0f;
+
+                // Apply simple lowpass filtering to smooth the square wave
+                float cutoff = 0.1f; // Adjust for smoothness
+                state.lowpassZ1 += cutoff * (rawSubOctave - state.lowpassZ1);
+                subOctaveSample = state.lowpassZ1 * processedSample * 0.5f;
+            }
+
+            // Mix original with sub-octave
+            channelData[sample] = processedSample + (subOctaveSample * currentSubOctave);
         }
     }
 }

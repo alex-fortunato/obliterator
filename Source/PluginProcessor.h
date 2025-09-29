@@ -50,9 +50,20 @@ private:
 
     juce::AudioParameterFloat *driveParameter;
     juce::AudioParameterFloat *asymmetryParameter;
+    juce::AudioParameterFloat *subOctaveParameter;
     // DSP State:
     float currentDrive = 1.0f;
     float currentAsymmetry = 0.0f;
+    float currentSubOctave = 0.0f;
+
+    // Octave divider state (per channel)
+    struct OctaveDividerState {
+        bool lastPositive = false;
+        bool flipFlop = false;
+        float subOscillator = 0.0f;
+        float lowpassZ1 = 0.0f; // For smoothing the sub-octave
+    };
+    OctaveDividerState octaveState[2]; // Left and right channel
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessor)
 };

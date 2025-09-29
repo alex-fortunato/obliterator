@@ -23,10 +23,13 @@ private:
     juce::Label driveLabel;
     juce::Slider asymmetrySlider;
     juce::Label asymmetryLabel;
+    juce::Slider subOctaveSlider;
+    juce::Label subOctaveLabel;
 
     // Parameter attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> driveAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> asymmetryAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> subOctaveAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };
