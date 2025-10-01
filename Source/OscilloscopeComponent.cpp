@@ -76,12 +76,14 @@ void OscilloscopeComponent::timerCallback()
 
 void OscilloscopeComponent::paint(juce::Graphics& g)
 {
-    // Draw black background
-    g.fillAll(juce::Colours::black);
+    // Draw black background with rounded corners
+    auto bounds = getLocalBounds().toFloat();
+    g.setColour(juce::Colours::black);
+    g.fillRoundedRectangle(bounds, 14.0f);
 
     juce::ScopedLock lock(pathCreationLock);
 
-    auto bounds = getLocalBounds().toFloat().reduced(4.0f);
+    bounds = bounds.reduced(4.0f);
     auto centerY = bounds.getCentreY();
     auto heightScale = bounds.getHeight() * 0.4f;
 
@@ -109,21 +111,21 @@ void OscilloscopeComponent::paint(juce::Graphics& g)
         }
     }
 
-    // Draw glow effect with multiple passes
+    // Draw glow effect with multiple passes - glowing gold color
     // Outer glow (most transparent, thickest)
-    g.setColour(juce::Colour(255, 0, 0).withAlpha(0.1f));
+    g.setColour(juce::Colour(0xff8F814F).withAlpha(0.1f));
     g.strokePath(waveformPath, juce::PathStrokeType(6.0f));
 
     // Middle glow
-    g.setColour(juce::Colour(255, 0, 0).withAlpha(0.3f));
+    g.setColour(juce::Colour(0xff8F814F).withAlpha(0.3f));
     g.strokePath(waveformPath, juce::PathStrokeType(3.0f));
 
     // Inner glow
-    g.setColour(juce::Colour(255, 50, 50).withAlpha(0.6f));
+    g.setColour(juce::Colour(0xff8F814F).withAlpha(0.6f));
     g.strokePath(waveformPath, juce::PathStrokeType(2.0f));
 
     // Core line (brightest, thinnest)
-    g.setColour(juce::Colour(255, 100, 100));
+    g.setColour(juce::Colour(0xffD4B870));
     g.strokePath(waveformPath, juce::PathStrokeType(1.0f));
 
     // Debug: Show buffer status

@@ -9,8 +9,8 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
 {
     // Load custom font
     sankofaFont = juce::Font(juce::Typeface::createSystemTypefaceFor(
-        BinaryData::SankofaDisplayRegular_ttf,
-        BinaryData::SankofaDisplayRegular_ttfSize));
+            BinaryData::SankofaDisplayRegular_ttf,
+            BinaryData::SankofaDisplayRegular_ttfSize));
 
     // Configure drive slider
     driveSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -24,7 +24,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     // Configure label
     driveLabel.setText("Drive", juce::dontSendNotification);
     driveLabel.setJustificationType(juce::Justification::centred);
-    driveLabel.setFont(sankofaFont.withHeight(14.0f));
+    driveLabel.setFont(sankofaFont.withHeight(28.0f));
     addAndMakeVisible(driveLabel);
 
     // Configure asymmetry slider
@@ -39,7 +39,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     // Configure asymmetry label
     asymmetryLabel.setText("Asymmetry", juce::dontSendNotification);
     asymmetryLabel.setJustificationType(juce::Justification::centred);
-    asymmetryLabel.setFont(sankofaFont.withHeight(14.0f));
+    asymmetryLabel.setFont(sankofaFont.withHeight(20.0f));
     addAndMakeVisible(asymmetryLabel);
 
     // Configure sub-octave slider
@@ -54,7 +54,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     // Configure sub-octave label
     subOctaveLabel.setText("Sub", juce::dontSendNotification);
     subOctaveLabel.setJustificationType(juce::Justification::centred);
-    subOctaveLabel.setFont(sankofaFont.withHeight(14.0f));
+    subOctaveLabel.setFont(sankofaFont.withHeight(20.0f));
     addAndMakeVisible(subOctaveLabel);
 
     // Configure dry/wet slider
@@ -69,7 +69,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     // Configure dry/wet label
     dryWetLabel.setText("Dry/Wet", juce::dontSendNotification);
     dryWetLabel.setJustificationType(juce::Justification::centred);
-    dryWetLabel.setFont(sankofaFont.withHeight(14.0f));
+    dryWetLabel.setFont(sankofaFont.withHeight(20.0f));
     addAndMakeVisible(dryWetLabel);
 
     // Configure value labels (positioned below knobs)
@@ -131,7 +131,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
 
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize(680, 450);
+    setSize(840, 515);
 
     // Make the plugin window resizable
     setResizable(false, false);
@@ -175,7 +175,7 @@ void AudioPluginAudioProcessorEditor::resized()
     int oscHeight = 183;
     int oscX = bounds.getWidth() - 206 -
                (oscWidth / 2); // Centered with drive knob
-    int oscY = 41; // 41px from top
+    int oscY = 120; // Moved down further
     oscilloscope.setBounds(oscX, oscY, oscWidth, oscHeight);
 
     // Define knob sizes (including arcs)
@@ -204,9 +204,9 @@ void AudioPluginAudioProcessorEditor::resized()
                                  .withCentre(juce::Point<int>(
                                          subOctaveCenterX, subOctaveCenterY));
 
-    // Position dry/wet knob: top-left area
+    // Position dry/wet knob: aligned with other knobs
     int dryWetCenterX = 80; // 80px from left edge
-    int dryWetCenterY = 80; // 80px from top
+    int dryWetCenterY = driveCenterY; // Aligned with drive knob
     auto dryWetArea =
             juce::Rectangle<int>(smallKnobSize, smallKnobSize)
                     .withCentre(juce::Point<int>(dryWetCenterX, dryWetCenterY));
@@ -218,11 +218,11 @@ void AudioPluginAudioProcessorEditor::resized()
     dryWetSlider.setBounds(dryWetArea);
 
     // Position labels above each knob
-    auto labelHeight = 15;
-    auto labelWidth = 80;
+    auto labelHeight = 30; // Increased to accommodate larger fonts
+    auto labelWidth = 100;
 
     driveLabel.setBounds(driveCenterX - labelWidth / 2,
-                         driveArea.getY() - labelHeight - 5, labelWidth,
+                         driveArea.getY() - labelHeight - 7, labelWidth,
                          labelHeight);
     asymmetryLabel.setBounds(asymmetryCenterX - labelWidth / 2,
                              asymmetryArea.getY() - labelHeight - 5, labelWidth,

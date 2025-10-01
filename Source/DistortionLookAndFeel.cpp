@@ -55,8 +55,9 @@ void DistortionLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, in
     auto arcCenterY = centerY;
 
     // Arc surrounds the knob with larger diameter
-    auto arcRadius = arcSize * 0.5f;
+    // Reduce radius slightly to account for stroke thickness to prevent clipping
     auto arcThickness = 2.0f;
+    auto arcRadius = (arcSize * 0.5f) - (arcThickness * 0.5f) - 1.0f; // Account for stroke and add safety margin
     auto arcStartAngle = -2.356f; // -135 degrees in radians
     auto arcEndAngle = 2.356f;    // +135 degrees in radians
     auto arcCurrentAngle = arcStartAngle + (sliderPos * (arcEndAngle - arcStartAngle));
@@ -89,7 +90,7 @@ void DistortionLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, in
                 filledArc.addCentredArc(arcCenterX, arcCenterY, arcRadius, arcRadius,
                                        0.0f, arcCurrentAngle, centerAngle, true);
             }
-            g.setColour(juce::Colours::red);
+            g.setColour(juce::Colour(0xff8F814F));
             g.strokePath(filledArc, juce::PathStrokeType(arcThickness));
         }
     }
@@ -101,7 +102,7 @@ void DistortionLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, in
             juce::Path filledArc;
             filledArc.addCentredArc(arcCenterX, arcCenterY, arcRadius, arcRadius,
                                    0.0f, arcStartAngle, arcCurrentAngle, true);
-            g.setColour(juce::Colours::red);
+            g.setColour(juce::Colour(0xff8F814F));
             g.strokePath(filledArc, juce::PathStrokeType(arcThickness));
         }
     }
