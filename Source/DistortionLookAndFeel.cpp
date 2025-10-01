@@ -23,8 +23,15 @@ void DistortionLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, in
     // Calculate the rotation angle based on slider position
     auto currentAngle = rotaryStartAngle + (sliderPos * (rotaryEndAngle - rotaryStartAngle));
 
-    // Create the bounds for the knob (smaller to leave room for arc around it)
-    auto knobBounds = juce::Rectangle<float>(x, y, width, height).reduced(20.0f);
+    // Determine knob size based on parameter range (drive has range 1-1000)
+    bool isDriveKnob = (slider.getMaximum() > 100.0);
+    float knobSize = isDriveKnob ? 95.0f : 54.0f;  // Knob itself
+    float arcSize = isDriveKnob ? 115.0f : 68.0f;   // Arc diameter (larger than knob)
+
+    // Create the bounds for the knob, centered and sized to target
+    auto fullBounds = juce::Rectangle<float>(x, y, width, height);
+    auto knobBounds = juce::Rectangle<float>(knobSize, knobSize)
+                        .withCentre(fullBounds.getCentre());
 
     // Calculate center point for rotation
     auto centerX = knobBounds.getCentreX();
@@ -47,8 +54,8 @@ void DistortionLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, in
     auto arcCenterX = centerX;
     auto arcCenterY = centerY;
 
-    // Make arc diameter larger than knob to circle around it
-    auto arcRadius = knobBounds.getWidth() * 0.6f; // Larger than knob for circling effect
+    // Arc surrounds the knob with larger diameter
+    auto arcRadius = arcSize * 0.5f;
     auto arcThickness = 2.0f;
     auto arcStartAngle = -2.356f; // -135 degrees in radians
     auto arcEndAngle = 2.356f;    // +135 degrees in radians

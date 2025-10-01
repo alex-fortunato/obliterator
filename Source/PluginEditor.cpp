@@ -161,72 +161,71 @@ void AudioPluginAudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds();
 
-    // Reserve space for title at top (matches the 40px from paint())
-    auto titleArea = bounds.removeFromTop(40);
+    // Define knob sizes (including arcs)
+    const int driveKnobSize = 115;  // Arc diameter for drive
+    const int smallKnobSize = 68;   // Arc diameter for other knobs
 
-    // Create main slider area
-    auto sliderArea = bounds.reduced(50);
+    // Position drive knob: bottom-right area
+    // Center at 206px from right edge, bottom 33px from absolute bottom
+    int driveCenterX = bounds.getWidth() - 206;
+    int driveCenterY = bounds.getHeight() - 33 - (driveKnobSize / 2);
+    auto driveArea = juce::Rectangle<int>(driveKnobSize, driveKnobSize)
+                        .withCentre(juce::Point<int>(driveCenterX, driveCenterY));
 
-    // Split area horizontally for four sliders
-    auto driveArea = sliderArea.removeFromLeft(sliderArea.getWidth() / 4);
-    auto asymmetryArea = sliderArea.removeFromLeft(sliderArea.getWidth() / 3);
-    auto subOctaveArea = sliderArea.removeFromLeft(sliderArea.getWidth() / 2);
-    auto dryWetArea = sliderArea;
+    // Position asymmetry knob: inline with drive, to the left
+    int asymmetryCenterX = driveCenterX - 150;  // 150px to the left of drive
+    int asymmetryCenterY = driveCenterY;
+    auto asymmetryArea = juce::Rectangle<int>(smallKnobSize, smallKnobSize)
+                            .withCentre(juce::Point<int>(asymmetryCenterX, asymmetryCenterY));
 
-    // Add some spacing between sliders
-    driveArea = driveArea.reduced(10);
-    asymmetryArea = asymmetryArea.reduced(10);
-    subOctaveArea = subOctaveArea.reduced(10);
-    dryWetArea = dryWetArea.reduced(10);
+    // Position sub-octave knob: inline with drive, to the right
+    int subOctaveCenterX = driveCenterX + 150;  // 150px to the right of drive
+    int subOctaveCenterY = driveCenterY;
+    auto subOctaveArea = juce::Rectangle<int>(smallKnobSize, smallKnobSize)
+                            .withCentre(juce::Point<int>(subOctaveCenterX, subOctaveCenterY));
 
-    // Don't reserve space - position value labels right against knobs
+    // Position dry/wet knob: top-left area
+    int dryWetCenterX = 80;  // 80px from left edge
+    int dryWetCenterY = 80;  // 80px from top
+    auto dryWetArea = juce::Rectangle<int>(smallKnobSize, smallKnobSize)
+                         .withCentre(juce::Point<int>(dryWetCenterX, dryWetCenterY));
+
+    // Set slider bounds
+    driveSlider.setBounds(driveArea);
+    asymmetrySlider.setBounds(asymmetryArea);
+    subOctaveSlider.setBounds(subOctaveArea);
+    dryWetSlider.setBounds(dryWetArea);
+
+    // Position labels above each knob
+    auto labelHeight = 15;
+    auto labelWidth = 80;
+
+    driveLabel.setBounds(driveCenterX - labelWidth/2,
+                         driveArea.getY() - labelHeight - 5,
+                         labelWidth, labelHeight);
+    asymmetryLabel.setBounds(asymmetryCenterX - labelWidth/2,
+                             asymmetryArea.getY() - labelHeight - 5,
+                             labelWidth, labelHeight);
+    subOctaveLabel.setBounds(subOctaveCenterX - labelWidth/2,
+                             subOctaveArea.getY() - labelHeight - 5,
+                             labelWidth, labelHeight);
+    dryWetLabel.setBounds(dryWetCenterX - labelWidth/2,
+                          dryWetArea.getY() - labelHeight - 5,
+                          labelWidth, labelHeight);
+
+    // Position value labels below each knob
     auto valueHeight = 15;
 
-    // Use the remaining space for knobs
-    auto driveKnobArea = driveArea;
-    auto asymmetryKnobArea = asymmetryArea;
-    auto subOctaveKnobArea = subOctaveArea;
-    auto dryWetKnobArea = dryWetArea;
-
-    // Position knobs first
-    driveSlider.setBounds(driveKnobArea);
-    asymmetrySlider.setBounds(asymmetryKnobArea);
-    subOctaveSlider.setBounds(subOctaveKnobArea);
-    dryWetSlider.setBounds(dryWetKnobArea);
-
-    // Position labels just above the arc (calculated based on knob bounds)
-    auto labelHeight = 15;
-    auto arcOffset = driveKnobArea.getHeight() *
-                     0.15f; // Distance from knob center to arc top
-
-    auto driveLabelY =
-            driveKnobArea.getY() + arcOffset + 15; // Much closer to knob center
-    auto asymmetryLabelY = asymmetryKnobArea.getY() + arcOffset + 15;
-    auto subOctaveLabelY = subOctaveKnobArea.getY() + arcOffset + 15;
-    auto dryWetLabelY = dryWetKnobArea.getY() + arcOffset + 15;
-
-    driveLabel.setBounds(driveKnobArea.getX(), driveLabelY,
-                         driveKnobArea.getWidth(), labelHeight);
-    asymmetryLabel.setBounds(asymmetryKnobArea.getX(), asymmetryLabelY,
-                             asymmetryKnobArea.getWidth(), labelHeight);
-    subOctaveLabel.setBounds(subOctaveKnobArea.getX(), subOctaveLabelY,
-                             subOctaveKnobArea.getWidth(), labelHeight);
-    dryWetLabel.setBounds(dryWetKnobArea.getX(), dryWetLabelY,
-                          dryWetKnobArea.getWidth(), labelHeight);
-
-    // Position value labels right against the bottom of knobs
-    auto knobCenterY = driveKnobArea.getCentreY();
-    auto knobRadius =
-            driveKnobArea.getWidth() * 0.3f; // Approximate knob radius
-    auto valueY =
-            knobCenterY + knobRadius + 10; // Slightly lower below knob edge
-
-    driveValueLabel.setBounds(driveKnobArea.getX(), valueY,
-                              driveKnobArea.getWidth(), valueHeight);
-    asymmetryValueLabel.setBounds(asymmetryKnobArea.getX(), valueY,
-                                  asymmetryKnobArea.getWidth(), valueHeight);
-    subOctaveValueLabel.setBounds(subOctaveKnobArea.getX(), valueY,
-                                  subOctaveKnobArea.getWidth(), valueHeight);
-    dryWetValueLabel.setBounds(dryWetKnobArea.getX(), valueY,
-                               dryWetKnobArea.getWidth(), valueHeight);
+    driveValueLabel.setBounds(driveCenterX - labelWidth/2,
+                              driveArea.getBottom() + 5,
+                              labelWidth, valueHeight);
+    asymmetryValueLabel.setBounds(asymmetryCenterX - labelWidth/2,
+                                  asymmetryArea.getBottom() + 5,
+                                  labelWidth, valueHeight);
+    subOctaveValueLabel.setBounds(subOctaveCenterX - labelWidth/2,
+                                  subOctaveArea.getBottom() + 5,
+                                  labelWidth, valueHeight);
+    dryWetValueLabel.setBounds(dryWetCenterX - labelWidth/2,
+                               dryWetArea.getBottom() + 5,
+                               labelWidth, valueHeight);
 }
