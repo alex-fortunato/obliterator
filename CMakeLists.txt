@@ -50,6 +50,7 @@ juce_add_binary_data(PluginResources
     SOURCES
         resources/background.svg
         resources/knob1.svg
+        resources/SankofaDisplay-Regular.ttf
 )
 
 # Generate JuceHeader.h
@@ -60,6 +61,7 @@ target_sources(PluginName PRIVATE
         Source/PluginProcessor.cpp
         Source/PluginEditor.cpp
         Source/DistortionLookAndFeel.cpp
+        Source/OscilloscopeComponent.cpp
         # Add other source files here
 )
 

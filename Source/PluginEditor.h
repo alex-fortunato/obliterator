@@ -2,6 +2,7 @@
 
 #include "PluginProcessor.h"
 #include "DistortionLookAndFeel.h"
+#include "OscilloscopeComponent.h"
 
 //==============================================================================
 class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor
@@ -22,8 +23,14 @@ private:
     // Background SVG
     std::unique_ptr<juce::Drawable> backgroundSVG;
 
+    // Custom font
+    juce::Font sankofaFont;
+
     // Custom LookAndFeel for knobs
     DistortionLookAndFeel customLookAndFeel;
+
+    // Oscilloscope
+    OscilloscopeComponent oscilloscope;
 
     // UI Components
     juce::Slider driveSlider;

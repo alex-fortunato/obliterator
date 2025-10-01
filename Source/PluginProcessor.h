@@ -2,6 +2,9 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
+// Forward declaration
+class OscilloscopeComponent;
+
 //==============================================================================
 class AudioPluginAudioProcessor final : public juce::AudioProcessor
 {
@@ -44,6 +47,10 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    //==============================================================================
+    // Oscilloscope support
+    void setOscilloscopeComponent(OscilloscopeComponent* osc);
+
 private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
@@ -66,6 +73,10 @@ private:
         float lowpassZ1 = 0.0f; // For smoothing the sub-octave
     };
     OctaveDividerState octaveState[2]; // Left and right channel
+
+    // Oscilloscope
+    OscilloscopeComponent* oscilloscopeComponent = nullptr;
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessor)
 };

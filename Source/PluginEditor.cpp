@@ -7,6 +7,11 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
         AudioPluginAudioProcessor& p) :
     AudioProcessorEditor(&p), processorRef(p)
 {
+    // Load custom font
+    sankofaFont = juce::Font(juce::Typeface::createSystemTypefaceFor(
+        BinaryData::SankofaDisplayRegular_ttf,
+        BinaryData::SankofaDisplayRegular_ttfSize));
+
     // Configure drive slider
     driveSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     driveSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -19,7 +24,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     // Configure label
     driveLabel.setText("Drive", juce::dontSendNotification);
     driveLabel.setJustificationType(juce::Justification::centred);
-    driveLabel.setFont(juce::Font(14.0f)); // Larger font size
+    driveLabel.setFont(sankofaFont.withHeight(14.0f));
     addAndMakeVisible(driveLabel);
 
     // Configure asymmetry slider
@@ -34,7 +39,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     // Configure asymmetry label
     asymmetryLabel.setText("Asymmetry", juce::dontSendNotification);
     asymmetryLabel.setJustificationType(juce::Justification::centred);
-    asymmetryLabel.setFont(juce::Font(14.0f)); // Larger font size
+    asymmetryLabel.setFont(sankofaFont.withHeight(14.0f));
     addAndMakeVisible(asymmetryLabel);
 
     // Configure sub-octave slider
@@ -47,9 +52,9 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     addAndMakeVisible(subOctaveSlider);
 
     // Configure sub-octave label
-    subOctaveLabel.setText("Sub Octave", juce::dontSendNotification);
+    subOctaveLabel.setText("Sub", juce::dontSendNotification);
     subOctaveLabel.setJustificationType(juce::Justification::centred);
-    subOctaveLabel.setFont(juce::Font(14.0f)); // Larger font size
+    subOctaveLabel.setFont(sankofaFont.withHeight(14.0f));
     addAndMakeVisible(subOctaveLabel);
 
     // Configure dry/wet slider
@@ -64,7 +69,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     // Configure dry/wet label
     dryWetLabel.setText("Dry/Wet", juce::dontSendNotification);
     dryWetLabel.setJustificationType(juce::Justification::centred);
-    dryWetLabel.setFont(juce::Font(14.0f)); // Larger font size
+    dryWetLabel.setFont(sankofaFont.withHeight(14.0f));
     addAndMakeVisible(dryWetLabel);
 
     // Configure value labels (positioned below knobs)
@@ -120,6 +125,10 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     backgroundSVG = juce::Drawable::createFromImageData(
             BinaryData::background_svg, BinaryData::background_svgSize);
 
+    // Setup oscilloscope
+    addAndMakeVisible(oscilloscope);
+    processorRef.setOscilloscopeComponent(&oscilloscope);
+
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize(680, 450);
@@ -160,6 +169,14 @@ void AudioPluginAudioProcessorEditor::paint(juce::Graphics& g)
 void AudioPluginAudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds();
+
+    // Position oscilloscope in top-right area
+    int oscWidth = 280;
+    int oscHeight = 183;
+    int oscX = bounds.getWidth() - 206 -
+               (oscWidth / 2); // Centered with drive knob
+    int oscY = 41; // 41px from top
+    oscilloscope.setBounds(oscX, oscY, oscWidth, oscHeight);
 
     // Define knob sizes (including arcs)
     const int driveKnobSize = 115; // Arc diameter for drive

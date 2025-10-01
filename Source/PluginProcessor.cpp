@@ -1,6 +1,7 @@
 #include "PluginProcessor.h"
 #include <JuceHeader.h>
 #include "PluginEditor.h"
+#include "OscilloscopeComponent.h"
 
 //==============================================================================
 AudioPluginAudioProcessor::AudioPluginAudioProcessor() :
@@ -234,6 +235,12 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
             channelData[sample] = drySample * (1.0f - currentDryWet) + wetSample * currentDryWet;
         }
     }
+
+    // Send output to oscilloscope (use left channel for mono display)
+    if (oscilloscopeComponent != nullptr && buffer.getNumChannels() > 0)
+    {
+        oscilloscopeComponent->pushBuffer(buffer.getReadPointer(0), buffer.getNumSamples());
+    }
 }
 
 //==============================================================================
@@ -263,6 +270,12 @@ void AudioPluginAudioProcessor::setStateInformation(const void *data,
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName(parameters.state.getType()))
             parameters.replaceState(juce::ValueTree::fromXml(*xmlState));
+}
+
+//==============================================================================
+void AudioPluginAudioProcessor::setOscilloscopeComponent(OscilloscopeComponent* osc)
+{
+    oscilloscopeComponent = osc;
 }
 
 //==============================================================================
