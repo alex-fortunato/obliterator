@@ -45,6 +45,13 @@ juce_add_plugin(PluginName
         #     resources/background.png
 )
 
+# Add binary data for resources
+juce_add_binary_data(PluginResources
+    SOURCES
+        resources/background.svg
+        resources/knob1.svg
+)
+
 # Generate JuceHeader.h
 juce_generate_juce_header(PluginName)
 
@@ -52,6 +59,7 @@ juce_generate_juce_header(PluginName)
 target_sources(PluginName PRIVATE
         Source/PluginProcessor.cpp
         Source/PluginEditor.cpp
+        Source/DistortionLookAndFeel.cpp
         # Add other source files here
 )
 
@@ -60,6 +68,7 @@ target_link_libraries(PluginName PRIVATE
         juce::juce_audio_utils
         juce::juce_audio_processors
         juce::juce_gui_extra
+        PluginResources
         # Add other modules as needed
 )
 

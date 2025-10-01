@@ -30,6 +30,9 @@ AudioPluginAudioProcessor::createParameterLayout()
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
             "suboctave", "Sub Octave",
             juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+            "drywet", "Dry/Wet",
+            juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 1.0f));
     return {params.begin(), params.end()};
 }
 
@@ -147,6 +150,7 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
     currentDrive = *parameters.getRawParameterValue("drive");
     currentAsymmetry = *parameters.getRawParameterValue("asymmetry");
     currentSubOctave = *parameters.getRawParameterValue("suboctave");
+    currentDryWet = *parameters.getRawParameterValue("drywet");
 
     auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
@@ -176,6 +180,7 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
         for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
         {
             float inputSample = channelData[sample];
+            float drySample = inputSample; // Store original dry signal
             float processedSample;
 
             // At drive=1.0: pass through unaffected
@@ -220,8 +225,13 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
                 subOctaveSample = state.lowpassZ1 * processedSample * 0.5f;
             }
 
-            // Mix original with sub-octave
-            channelData[sample] = processedSample + (subOctaveSample * currentSubOctave);
+            // Add sub-octave to processed signal
+            float wetSample = processedSample + (subOctaveSample * currentSubOctave);
+
+            // Apply dry/wet mixing
+            // currentDryWet = 0.0 (left): 100% dry
+            // currentDryWet = 1.0 (right): 100% wet
+            channelData[sample] = drySample * (1.0f - currentDryWet) + wetSample * currentDryWet;
         }
     }
 }

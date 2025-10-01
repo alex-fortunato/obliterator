@@ -51,10 +51,12 @@ private:
     juce::AudioParameterFloat *driveParameter;
     juce::AudioParameterFloat *asymmetryParameter;
     juce::AudioParameterFloat *subOctaveParameter;
+    juce::AudioParameterFloat *dryWetParameter;
     // DSP State:
     float currentDrive = 1.0f;
     float currentAsymmetry = 0.0f;
     float currentSubOctave = 0.0f;
+    float currentDryWet = 1.0f;
 
     // Octave divider state (per channel)
     struct OctaveDividerState {
