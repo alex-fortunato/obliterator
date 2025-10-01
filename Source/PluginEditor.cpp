@@ -179,12 +179,8 @@ void AudioPluginAudioProcessorEditor::resized()
     subOctaveArea = subOctaveArea.reduced(10);
     dryWetArea = dryWetArea.reduced(10);
 
-    // Reserve minimal space for value labels below knobs
-    auto valueHeight = 20;
-    auto driveValueArea = driveArea.removeFromBottom(valueHeight);
-    auto asymmetryValueArea = asymmetryArea.removeFromBottom(valueHeight);
-    auto subOctaveValueArea = subOctaveArea.removeFromBottom(valueHeight);
-    auto dryWetValueArea = dryWetArea.removeFromBottom(valueHeight);
+    // Don't reserve space - position value labels right against knobs
+    auto valueHeight = 15;
 
     // Use the remaining space for knobs
     auto driveKnobArea = driveArea;
@@ -200,21 +196,37 @@ void AudioPluginAudioProcessorEditor::resized()
 
     // Position labels just above the arc (calculated based on knob bounds)
     auto labelHeight = 15;
-    auto arcOffset = driveKnobArea.getHeight() * 0.15f; // Distance from knob center to arc top
+    auto arcOffset = driveKnobArea.getHeight() *
+                     0.15f; // Distance from knob center to arc top
 
-    auto driveLabelY = driveKnobArea.getY() + arcOffset + 15; // Much closer to knob center
+    auto driveLabelY =
+            driveKnobArea.getY() + arcOffset + 15; // Much closer to knob center
     auto asymmetryLabelY = asymmetryKnobArea.getY() + arcOffset + 15;
     auto subOctaveLabelY = subOctaveKnobArea.getY() + arcOffset + 15;
     auto dryWetLabelY = dryWetKnobArea.getY() + arcOffset + 15;
 
-    driveLabel.setBounds(driveKnobArea.getX(), driveLabelY, driveKnobArea.getWidth(), labelHeight);
-    asymmetryLabel.setBounds(asymmetryKnobArea.getX(), asymmetryLabelY, asymmetryKnobArea.getWidth(), labelHeight);
-    subOctaveLabel.setBounds(subOctaveKnobArea.getX(), subOctaveLabelY, subOctaveKnobArea.getWidth(), labelHeight);
-    dryWetLabel.setBounds(dryWetKnobArea.getX(), dryWetLabelY, dryWetKnobArea.getWidth(), labelHeight);
+    driveLabel.setBounds(driveKnobArea.getX(), driveLabelY,
+                         driveKnobArea.getWidth(), labelHeight);
+    asymmetryLabel.setBounds(asymmetryKnobArea.getX(), asymmetryLabelY,
+                             asymmetryKnobArea.getWidth(), labelHeight);
+    subOctaveLabel.setBounds(subOctaveKnobArea.getX(), subOctaveLabelY,
+                             subOctaveKnobArea.getWidth(), labelHeight);
+    dryWetLabel.setBounds(dryWetKnobArea.getX(), dryWetLabelY,
+                          dryWetKnobArea.getWidth(), labelHeight);
 
-    // Position value labels below knobs
-    driveValueLabel.setBounds(driveValueArea);
-    asymmetryValueLabel.setBounds(asymmetryValueArea);
-    subOctaveValueLabel.setBounds(subOctaveValueArea);
-    dryWetValueLabel.setBounds(dryWetValueArea);
+    // Position value labels right against the bottom of knobs
+    auto knobCenterY = driveKnobArea.getCentreY();
+    auto knobRadius =
+            driveKnobArea.getWidth() * 0.3f; // Approximate knob radius
+    auto valueY =
+            knobCenterY + knobRadius + 10; // Slightly lower below knob edge
+
+    driveValueLabel.setBounds(driveKnobArea.getX(), valueY,
+                              driveKnobArea.getWidth(), valueHeight);
+    asymmetryValueLabel.setBounds(asymmetryKnobArea.getX(), valueY,
+                                  asymmetryKnobArea.getWidth(), valueHeight);
+    subOctaveValueLabel.setBounds(subOctaveKnobArea.getX(), valueY,
+                                  subOctaveKnobArea.getWidth(), valueHeight);
+    dryWetValueLabel.setBounds(dryWetKnobArea.getX(), valueY,
+                               dryWetKnobArea.getWidth(), valueHeight);
 }
