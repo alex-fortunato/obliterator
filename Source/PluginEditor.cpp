@@ -207,35 +207,33 @@ void AudioPluginAudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds();
 
-    // Position oscilloscope in top-right area
-    int oscWidth = 280;
-    int oscHeight = 183;
-    int oscX = bounds.getWidth() - 206 -
-               (oscWidth / 2); // Centered with drive knob
-    int oscY = 120; // Moved down further
+    // Position oscilloscope centered horizontally, moved down slightly
+    int oscWidth = 320;
+    int oscHeight = 210;
+    int oscX = (bounds.getWidth() - oscWidth) / 2; // Centered horizontally
+    int oscY = 160; // Moved down further
     oscilloscope.setBounds(oscX, oscY, oscWidth, oscHeight);
 
     // Define knob sizes (including arcs)
     const int driveKnobSize = 115; // Arc diameter for drive
     const int smallKnobSize = 68; // Arc diameter for other knobs
 
-    // Position drive knob: bottom-right area
-    // Center at 206px from right edge, bottom 33px from absolute bottom
-    int driveCenterX = bounds.getWidth() - 206;
+    // Position drive knob: centered horizontally in UI window
+    int driveCenterX = bounds.getWidth() / 2; // Centered horizontally
     int driveCenterY = bounds.getHeight() - 33 - (driveKnobSize / 2);
     auto driveArea =
             juce::Rectangle<int>(driveKnobSize, driveKnobSize)
                     .withCentre(juce::Point<int>(driveCenterX, driveCenterY));
 
-    // Position asymmetry knob: inline with drive, to the left
-    int asymmetryCenterX = driveCenterX - 150; // 150px to the left of drive
+    // Position asymmetry knob: just to the left of drive knob
+    int asymmetryCenterX = driveCenterX - 110; // Just to the left of drive
     int asymmetryCenterY = driveCenterY;
     auto asymmetryArea = juce::Rectangle<int>(smallKnobSize, smallKnobSize)
                                  .withCentre(juce::Point<int>(
                                          asymmetryCenterX, asymmetryCenterY));
 
-    // Position sub-octave knob: inline with drive, to the right
-    int subOctaveCenterX = driveCenterX + 150; // 150px to the right of drive
+    // Position sub-octave knob: just to the right of drive knob
+    int subOctaveCenterX = driveCenterX + 110; // Just to the right of drive
     int subOctaveCenterY = driveCenterY;
     auto subOctaveArea = juce::Rectangle<int>(smallKnobSize, smallKnobSize)
                                  .withCentre(juce::Point<int>(
