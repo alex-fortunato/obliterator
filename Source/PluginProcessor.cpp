@@ -34,6 +34,9 @@ AudioPluginAudioProcessor::createParameterLayout()
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
             "drywet", "Dry/Wet",
             juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 1.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+            "tone", "Tone",
+            juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f));
     return {params.begin(), params.end()};
 }
 
@@ -152,6 +155,7 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
     currentAsymmetry = *parameters.getRawParameterValue("asymmetry");
     currentSubOctave = *parameters.getRawParameterValue("suboctave");
     currentDryWet = *parameters.getRawParameterValue("drywet");
+    currentTone = *parameters.getRawParameterValue("tone");
 
     auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
@@ -196,9 +200,19 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
                 float biasedInput = inputSample + currentAsymmetry * 0.5f;
                 float distortedSample = std::tanh(currentDrive * biasedInput);
 
-                // Remove DC offset caused by asymmetry
-                float dcOffset = std::tanh(currentDrive * currentAsymmetry * 0.5f);
-                processedSample = distortedSample - dcOffset;
+                // Apply DC blocking filter to remove DC offset
+                if (channel < 2)
+                {
+                    auto& dc = dcBlocker[channel];
+                    // DC blocker: y[n] = x[n] - x[n-1] + 0.995 * y[n-1]
+                    processedSample = distortedSample - dc.x1 + 0.995f * dc.y1;
+                    dc.x1 = distortedSample;
+                    dc.y1 = processedSample;
+                }
+                else
+                {
+                    processedSample = distortedSample;
+                }
             }
 
             // Sub-octave generation using octave divider
@@ -228,6 +242,39 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
 
             // Add sub-octave to processed signal
             float wetSample = processedSample + (subOctaveSample * currentSubOctave);
+
+            // Apply tone filter (tilt EQ)
+            if (channel < 2)
+            {
+                auto& tone = toneState[channel];
+
+                // Tone control: 0.0 = dark, 0.5 = flat, 1.0 = bright
+                // Use simple one-pole lowpass and highpass filters
+
+                // Lowpass for dark tone
+                float lpCutoff = 0.3f;
+                tone.lowpassZ1 += lpCutoff * (wetSample - tone.lowpassZ1);
+
+                // Highpass for bright tone (using difference equation)
+                float hpCutoff = 0.05f;
+                float highpassOut = wetSample - tone.highpassX1 + 0.95f * tone.highpassZ1;
+                tone.highpassZ1 = highpassOut;
+                tone.highpassX1 = wetSample;
+
+                // Mix between lowpass (dark) and highpass (bright) based on tone knob
+                if (currentTone < 0.5f)
+                {
+                    // Blend from full lowpass (0.0) to flat (0.5)
+                    float blend = currentTone * 2.0f; // 0.0 to 1.0
+                    wetSample = tone.lowpassZ1 * (1.0f - blend) + wetSample * blend;
+                }
+                else
+                {
+                    // Blend from flat (0.5) to full highpass (1.0)
+                    float blend = (currentTone - 0.5f) * 2.0f; // 0.0 to 1.0
+                    wetSample = wetSample * (1.0f - blend) + highpassOut * blend;
+                }
+            }
 
             // Apply dry/wet mixing
             // currentDryWet = 0.0 (left): 100% dry

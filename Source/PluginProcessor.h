@@ -59,11 +59,13 @@ private:
     juce::AudioParameterFloat *asymmetryParameter;
     juce::AudioParameterFloat *subOctaveParameter;
     juce::AudioParameterFloat *dryWetParameter;
+    juce::AudioParameterFloat *toneParameter;
     // DSP State:
     float currentDrive = 1.0f;
     float currentAsymmetry = 0.0f;
     float currentSubOctave = 0.0f;
     float currentDryWet = 1.0f;
+    float currentTone = 0.5f;
 
     // Octave divider state (per channel)
     struct OctaveDividerState {
@@ -73,6 +75,21 @@ private:
         float lowpassZ1 = 0.0f; // For smoothing the sub-octave
     };
     OctaveDividerState octaveState[2]; // Left and right channel
+
+    // DC blocking filter state (per channel)
+    struct DCBlockerState {
+        float x1 = 0.0f;
+        float y1 = 0.0f;
+    };
+    DCBlockerState dcBlocker[2];
+
+    // Tone filter state (per channel)
+    struct ToneFilterState {
+        float lowpassZ1 = 0.0f;
+        float highpassZ1 = 0.0f;
+        float highpassX1 = 0.0f;
+    };
+    ToneFilterState toneState[2];
 
     // Oscilloscope
     OscilloscopeComponent* oscilloscopeComponent = nullptr;

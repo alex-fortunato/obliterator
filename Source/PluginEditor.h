@@ -45,12 +45,16 @@ private:
     juce::Slider dryWetSlider;
     juce::Label dryWetLabel;
     juce::Label dryWetValueLabel;
+    juce::Slider toneSlider;
+    juce::Label toneLabel;
+    juce::Label toneValueLabel;
 
     // Parameter attachments
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> driveAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> asymmetryAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> subOctaveAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> dryWetAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> toneAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };

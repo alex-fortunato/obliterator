@@ -72,6 +72,21 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     dryWetLabel.setFont(sankofaFont.withHeight(20.0f));
     addAndMakeVisible(dryWetLabel);
 
+    // Configure tone slider
+    toneSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    toneSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    toneSlider.setRange(0.0, 1.0, 0.01);
+    toneSlider.setValue(0.5); // Default to center (flat)
+    toneSlider.setLookAndFeel(
+            &customLookAndFeel); // Apply custom knob graphics
+    addAndMakeVisible(toneSlider);
+
+    // Configure tone label
+    toneLabel.setText("Tone", juce::dontSendNotification);
+    toneLabel.setJustificationType(juce::Justification::centred);
+    toneLabel.setFont(sankofaFont.withHeight(20.0f));
+    addAndMakeVisible(toneLabel);
+
     // Configure value labels (positioned below knobs)
     driveValueLabel.setJustificationType(juce::Justification::centred);
     driveValueLabel.setText("1.0", juce::dontSendNotification);
@@ -89,6 +104,10 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     dryWetValueLabel.setText("1.0", juce::dontSendNotification);
     addAndMakeVisible(dryWetValueLabel);
 
+    toneValueLabel.setJustificationType(juce::Justification::centred);
+    toneValueLabel.setText("0.50", juce::dontSendNotification);
+    addAndMakeVisible(toneValueLabel);
+
     // Attach parameters
     driveAttachment = std::make_unique<
             juce::AudioProcessorValueTreeState::SliderAttachment>(
@@ -102,6 +121,9 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     dryWetAttachment = std::make_unique<
             juce::AudioProcessorValueTreeState::SliderAttachment>(
             processorRef.parameters, "drywet", dryWetSlider);
+    toneAttachment = std::make_unique<
+            juce::AudioProcessorValueTreeState::SliderAttachment>(
+            processorRef.parameters, "tone", toneSlider);
 
     // Add slider listeners to update value labels
     driveSlider.onValueChange = [this]() {
@@ -119,6 +141,10 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     dryWetSlider.onValueChange = [this]() {
         dryWetValueLabel.setText(juce::String(dryWetSlider.getValue(), 2),
                                  juce::dontSendNotification);
+    };
+    toneSlider.onValueChange = [this]() {
+        toneValueLabel.setText(juce::String(toneSlider.getValue(), 2),
+                               juce::dontSendNotification);
     };
 
     // Load background image
@@ -150,6 +176,7 @@ AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
     asymmetrySlider.setLookAndFeel(nullptr);
     subOctaveSlider.setLookAndFeel(nullptr);
     dryWetSlider.setLookAndFeel(nullptr);
+    toneSlider.setLookAndFeel(nullptr);
 }
 
 //==============================================================================
@@ -221,11 +248,19 @@ void AudioPluginAudioProcessorEditor::resized()
             juce::Rectangle<int>(smallKnobSize, smallKnobSize)
                     .withCentre(juce::Point<int>(dryWetCenterX, dryWetCenterY));
 
+    // Position tone knob: top-left area above dry/wet
+    int toneCenterX = 80; // Aligned with dry/wet
+    int toneCenterY = 180; // Above dry/wet
+    auto toneArea =
+            juce::Rectangle<int>(smallKnobSize, smallKnobSize)
+                    .withCentre(juce::Point<int>(toneCenterX, toneCenterY));
+
     // Set slider bounds
     driveSlider.setBounds(driveArea);
     asymmetrySlider.setBounds(asymmetryArea);
     subOctaveSlider.setBounds(subOctaveArea);
     dryWetSlider.setBounds(dryWetArea);
+    toneSlider.setBounds(toneArea);
 
     // Position labels above each knob
     auto labelHeight = 30; // Increased to accommodate larger fonts
@@ -243,6 +278,9 @@ void AudioPluginAudioProcessorEditor::resized()
     dryWetLabel.setBounds(dryWetCenterX - labelWidth / 2,
                           dryWetArea.getY() - labelHeight - 5, labelWidth,
                           labelHeight);
+    toneLabel.setBounds(toneCenterX - labelWidth / 2,
+                        toneArea.getY() - labelHeight - 5, labelWidth,
+                        labelHeight);
 
     // Position value labels below each knob
     auto valueHeight = 15;
@@ -259,4 +297,7 @@ void AudioPluginAudioProcessorEditor::resized()
     dryWetValueLabel.setBounds(dryWetCenterX - labelWidth / 2,
                                dryWetArea.getBottom() + 5, labelWidth,
                                valueHeight);
+    toneValueLabel.setBounds(toneCenterX - labelWidth / 2,
+                             toneArea.getBottom() + 5, labelWidth,
+                             valueHeight);
 }
