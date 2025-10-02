@@ -90,7 +90,7 @@ void DistortionLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, in
                 filledArc.addCentredArc(arcCenterX, arcCenterY, arcRadius, arcRadius,
                                        0.0f, arcCurrentAngle, centerAngle, true);
             }
-            g.setColour(juce::Colour(0xff8F814F));
+            g.setColour(juce::Colour(0xffB69B22));
             g.strokePath(filledArc, juce::PathStrokeType(arcThickness));
         }
     }
@@ -102,7 +102,7 @@ void DistortionLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, in
             juce::Path filledArc;
             filledArc.addCentredArc(arcCenterX, arcCenterY, arcRadius, arcRadius,
                                    0.0f, arcStartAngle, arcCurrentAngle, true);
-            g.setColour(juce::Colour(0xff8F814F));
+            g.setColour(juce::Colour(0xffB69B22));
             g.strokePath(filledArc, juce::PathStrokeType(arcThickness));
         }
     }

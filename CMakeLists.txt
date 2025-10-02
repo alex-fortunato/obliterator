@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(PluginName VERSION 1.1.0)
+project(Obliterator VERSION 1.1.0)
 set(CMAKE_CXX_STANDARD 17)
 
 # Generate compile_commands.json for LSP support
@@ -27,10 +27,10 @@ else()
 endif()
 
 # Set up your plugin
-juce_add_plugin(PluginName
+juce_add_plugin(Obliterator
         VERSION 1.1.0
         FORMATS AU VST3 AAX Standalone
-        PRODUCT_NAME "PluginName"
+        PRODUCT_NAME "Obliterator"
         COMPANY_NAME AlexFortunatoMusic
 
         IS_SYNTH FALSE                       # Is this a synth or an effect?
@@ -40,7 +40,7 @@ juce_add_plugin(PluginName
         EDITOR_WANTS_KEYBOARD_FOCUS FALSE    # Does the editor need keyboard focus?
         COPY_PLUGIN_AFTER_BUILD TRUE         # Should the plugin be installed to a default location after building?
         PLUGIN_MANUFACTURER_CODE Fort        # A four-character manufacturer id with at least one upper-case character
-        PLUGIN_CODE Xxxx                    # A unique four-character plugin id with exactly one upper-case character
+        PLUGIN_CODE Obli                    # A unique four-character plugin id with exactly one upper-case character
         # RESOURCES
         #     resources/background.png
 )
@@ -48,16 +48,16 @@ juce_add_plugin(PluginName
 # Add binary data for resources
 juce_add_binary_data(PluginResources
     SOURCES
-        resources/background.svg
+        resources/background.png
         resources/knob1.svg
         resources/SankofaDisplay-Regular.ttf
 )
 
 # Generate JuceHeader.h
-juce_generate_juce_header(PluginName)
+juce_generate_juce_header(Obliterator)
 
 # Add source files
-target_sources(PluginName PRIVATE
+target_sources(Obliterator PRIVATE
         Source/PluginProcessor.cpp
         Source/PluginEditor.cpp
         Source/DistortionLookAndFeel.cpp
@@ -66,7 +66,7 @@ target_sources(PluginName PRIVATE
 )
 
 # Link to JUCE modules
-target_link_libraries(PluginName PRIVATE
+target_link_libraries(Obliterator PRIVATE
         juce::juce_audio_utils
         juce::juce_audio_processors
         juce::juce_gui_extra
@@ -75,7 +75,7 @@ target_link_libraries(PluginName PRIVATE
 )
 
 # Add include directories for source and shared headers
-target_include_directories(PluginName PRIVATE
+target_include_directories(Obliterator PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/Source
         #${CMAKE_BINARY_DIR}/cmake-build-debug/AudioSender_artefacts/JuceLibraryCode
         #${CMAKE_CURRENT_SOURCE_DIR}/libs/juce/modules
@@ -83,7 +83,7 @@ target_include_directories(PluginName PRIVATE
 )
 
 # These definitions are recommended by JUCE.
-target_compile_definitions(PluginName
+target_compile_definitions(Obliterator
         PUBLIC
         JUCE_WEB_BROWSER=0
         JUCE_USE_CURL=0

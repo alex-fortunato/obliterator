@@ -20,8 +20,8 @@ private:
     // access the processor object that created it.
     AudioPluginAudioProcessor& processorRef;
 
-    // Background SVG
-    std::unique_ptr<juce::Drawable> backgroundSVG;
+    // Background image
+    juce::Image backgroundImage;
 
     // Custom font
     juce::Font sankofaFont;

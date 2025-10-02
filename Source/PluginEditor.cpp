@@ -121,9 +121,9 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
                                  juce::dontSendNotification);
     };
 
-    // Load background SVG
-    backgroundSVG = juce::Drawable::createFromImageData(
-            BinaryData::background_svg, BinaryData::background_svgSize);
+    // Load background image
+    backgroundImage = juce::ImageCache::getFromMemory(
+            BinaryData::background_png, BinaryData::background_pngSize);
 
     // Setup oscilloscope
     addAndMakeVisible(oscilloscope);
@@ -140,20 +140,30 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     getConstrainer()->setFixedAspectRatio(680.0 / 450.0);
 }
 
-AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor() {}
+AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
+{
+    // Clear the oscilloscope pointer to prevent dangling pointer access
+    processorRef.setOscilloscopeComponent(nullptr);
+
+    // Reset LookAndFeel to prevent dangling reference
+    driveSlider.setLookAndFeel(nullptr);
+    asymmetrySlider.setLookAndFeel(nullptr);
+    subOctaveSlider.setLookAndFeel(nullptr);
+    dryWetSlider.setLookAndFeel(nullptr);
+}
 
 //==============================================================================
 void AudioPluginAudioProcessorEditor::paint(juce::Graphics& g)
 {
-    // Draw SVG background if loaded, otherwise fallback to solid color
-    if (backgroundSVG)
+    // Draw background image if loaded, otherwise fallback to solid color
+    if (backgroundImage.isValid())
     {
-        backgroundSVG->drawWithin(g, getLocalBounds().toFloat(),
-                                  juce::RectanglePlacement::stretchToFit, 1.0f);
+        g.drawImage(backgroundImage, getLocalBounds().toFloat(),
+                    juce::RectanglePlacement::stretchToFit);
     }
     else
     {
-        // Fallback to solid background if SVG fails to load
+        // Fallback to solid background if image fails to load
         g.fillAll(getLookAndFeel().findColour(
                 juce::ResizableWindow::backgroundColourId));
     }
