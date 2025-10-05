@@ -124,9 +124,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     toneAttachment = std::make_unique<
             juce::AudioProcessorValueTreeState::SliderAttachment>(
             processorRef.parameters, "tone", toneSlider);
-    algorithmAttachment = std::make_unique<
-            juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
-            processorRef.parameters, "algorithm", algorithmSelector);
+    // (Attachment created after items are added below)
 
     // Add slider listeners to update value labels
     driveSlider.onValueChange = [this]() {
@@ -150,11 +148,10 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
                                juce::dontSendNotification);
     };
 
-    // Configure algorithm selector
+    // Configure algorithm selector (let attachment reflect current parameter)
     algorithmSelector.addItem("Tanh", 1);
     algorithmSelector.addItem("Foldback", 2);
     algorithmSelector.addItem("Tube", 3);
-    algorithmSelector.setSelectedId(1);
     addAndMakeVisible(algorithmSelector);
 
     // Configure algorithm label
@@ -162,6 +159,11 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     algorithmLabel.setJustificationType(juce::Justification::centred);
     algorithmLabel.setFont(sankofaFont.withHeight(20.0f));
     addAndMakeVisible(algorithmLabel);
+
+    // Create attachment after items are added so it can sync selection
+    algorithmAttachment = std::make_unique<
+            juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
+            processorRef.parameters, "algorithm", algorithmSelector);
 
     // Load background image
     backgroundImage = juce::ImageCache::getFromMemory(
