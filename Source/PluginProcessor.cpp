@@ -37,6 +37,9 @@ AudioPluginAudioProcessor::createParameterLayout()
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
             "tone", "Tone",
             juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f));
+    params.push_back(std::make_unique<juce::AudioParameterChoice>(
+            "algorithm", "Algorithm",
+            juce::StringArray{"Tanh", "Foldback", "Tube"}, 0));
     return {params.begin(), params.end()};
 }
 
@@ -156,6 +159,7 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
     currentSubOctave = *parameters.getRawParameterValue("suboctave");
     currentDryWet = *parameters.getRawParameterValue("drywet");
     currentTone = *parameters.getRawParameterValue("tone");
+    currentAlgorithm = static_cast<int>(*parameters.getRawParameterValue("algorithm"));
 
     auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
@@ -189,16 +193,30 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
             float processedSample;
 
             // At drive=1.0: pass through unaffected
-            // Above drive=1.0: apply asymmetric tanh saturation
+            // Above drive=1.0: apply selected distortion algorithm
             if (currentDrive <= 1.0f)
             {
                 processedSample = inputSample; // Unity gain, no processing
             }
             else
             {
-                // Apply asymmetric bias before distortion
-                float biasedInput = inputSample + currentAsymmetry * 0.5f;
-                float distortedSample = std::tanh(currentDrive * biasedInput);
+                // Apply selected distortion algorithm
+                float distortedSample;
+                switch (static_cast<DistortionType>(currentAlgorithm))
+                {
+                    case DistortionType::Tanh:
+                        distortedSample = applyTanhDistortion(inputSample, currentDrive, currentAsymmetry);
+                        break;
+                    case DistortionType::Foldback:
+                        distortedSample = applyFoldbackDistortion(inputSample, currentDrive, currentAsymmetry);
+                        break;
+                    case DistortionType::Tube:
+                        distortedSample = applyTubeDistortion(inputSample, currentDrive, currentAsymmetry);
+                        break;
+                    default:
+                        distortedSample = inputSample;
+                        break;
+                }
 
                 // Apply DC blocking filter to remove DC offset
                 if (channel < 2)
@@ -237,7 +255,8 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
                 // Apply simple lowpass filtering to smooth the square wave
                 float cutoff = 0.1f; // Adjust for smoothness
                 state.lowpassZ1 += cutoff * (rawSubOctave - state.lowpassZ1);
-                subOctaveSample = state.lowpassZ1 * processedSample * 0.5f;
+                // Use independent amplitude so sub-octave is always audible
+                subOctaveSample = state.lowpassZ1 * 0.3f;
             }
 
             // Add sub-octave to processed signal
@@ -323,6 +342,73 @@ void AudioPluginAudioProcessor::setStateInformation(const void *data,
 void AudioPluginAudioProcessor::setOscilloscopeComponent(OscilloscopeComponent* osc)
 {
     oscilloscopeComponent = osc;
+}
+
+//==============================================================================
+// Distortion algorithm implementations
+float AudioPluginAudioProcessor::applyTanhDistortion(float input, float drive, float asymmetry)
+{
+    // Apply asymmetric bias before distortion
+    float biasedInput = input + asymmetry * 0.5f;
+    return std::tanh(drive * biasedInput);
+}
+
+float AudioPluginAudioProcessor::applyFoldbackDistortion(float input, float drive, float asymmetry)
+{
+    // Wave folding algorithm
+    // Scale input by drive amount (use moderate scaling)
+    float scaledInput = input * std::sqrt(drive);
+
+    // Asymmetric folding: adjust thresholds based on asymmetry parameter
+    // Positive asymmetry = higher positive threshold, lower negative threshold
+    // Negative asymmetry = lower positive threshold, higher negative threshold
+    float positiveThreshold = 1.0f + asymmetry * 0.5f;
+    float negativeThreshold = 1.0f - asymmetry * 0.5f;
+
+    // Apply asymmetric wave folding with reflection
+    float foldedSample = scaledInput;
+    int maxIterations = 20; // Prevent infinite loops
+    for (int i = 0; i < maxIterations; ++i)
+    {
+        if (foldedSample > positiveThreshold)
+            foldedSample = 2.0f * positiveThreshold - foldedSample;
+        else if (foldedSample < -negativeThreshold)
+            foldedSample = -2.0f * negativeThreshold - foldedSample;
+        else
+            break; // No more folding needed
+    }
+
+    // Simple output scaling to maintain reasonable levels
+    return foldedSample * 0.8f;
+}
+
+float AudioPluginAudioProcessor::applyTubeDistortion(float input, float drive, float asymmetry)
+{
+    // Apply asymmetric bias before distortion
+    float biasedInput = input + asymmetry * 0.5f;
+
+    // Scale input by drive amount with high sensitivity for extreme saturation
+    // Use sqrt to match the intensity curve, with aggressive multiplier
+    float scaledInput = biasedInput * std::sqrt(drive) * 5.0f;
+
+    // Tube distortion using exponential saturation
+    // Positive and negative sides have different characteristics (asymmetric)
+    float output;
+    if (scaledInput >= 0.0f)
+    {
+        // Positive side: softer compression
+        output = 1.0f - std::exp(-scaledInput);
+    }
+    else
+    {
+        // Negative side: slightly harder compression (tube characteristic)
+        output = -1.0f + std::exp(scaledInput * 1.2f);
+    }
+
+    // Apply gentle compression to tame peaks
+    output = output * 0.85f;
+
+    return output;
 }
 
 //==============================================================================

@@ -124,6 +124,9 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
     toneAttachment = std::make_unique<
             juce::AudioProcessorValueTreeState::SliderAttachment>(
             processorRef.parameters, "tone", toneSlider);
+    algorithmAttachment = std::make_unique<
+            juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
+            processorRef.parameters, "algorithm", algorithmSelector);
 
     // Add slider listeners to update value labels
     driveSlider.onValueChange = [this]() {
@@ -146,6 +149,19 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
         toneValueLabel.setText(juce::String(toneSlider.getValue(), 2),
                                juce::dontSendNotification);
     };
+
+    // Configure algorithm selector
+    algorithmSelector.addItem("Tanh", 1);
+    algorithmSelector.addItem("Foldback", 2);
+    algorithmSelector.addItem("Tube", 3);
+    algorithmSelector.setSelectedId(1);
+    addAndMakeVisible(algorithmSelector);
+
+    // Configure algorithm label
+    algorithmLabel.setText("Algorithm", juce::dontSendNotification);
+    algorithmLabel.setJustificationType(juce::Justification::centred);
+    algorithmLabel.setFont(sankofaFont.withHeight(20.0f));
+    addAndMakeVisible(algorithmLabel);
 
     // Load background image
     backgroundImage = juce::ImageCache::getFromMemory(
@@ -207,12 +223,23 @@ void AudioPluginAudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds();
 
-    // Position oscilloscope centered horizontally, moved down slightly
+    // Position oscilloscope centered horizontally, moved up
     int oscWidth = 320;
     int oscHeight = 210;
     int oscX = (bounds.getWidth() - oscWidth) / 2; // Centered horizontally
-    int oscY = 160; // Moved down further
+    int oscY = 120; // Moved up slightly
     oscilloscope.setBounds(oscX, oscY, oscWidth, oscHeight);
+
+    // Position algorithm selector and label to the right of oscilloscope
+    int algorithmWidth = 150;
+    int algorithmHeight = 25;
+    int algorithmX = oscX + oscWidth + 20; // 20px to the right of oscilloscope
+    int algorithmY = oscY + 40; // Aligned with oscilloscope top area
+    algorithmSelector.setBounds(algorithmX, algorithmY, algorithmWidth, algorithmHeight);
+
+    // Position algorithm label above selector
+    int algorithmLabelY = algorithmY - 25;
+    algorithmLabel.setBounds(algorithmX, algorithmLabelY, algorithmWidth, 20);
 
     // Define knob sizes (including arcs)
     const int driveKnobSize = 115; // Arc diameter for drive

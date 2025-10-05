@@ -6,6 +6,15 @@
 class OscilloscopeComponent;
 
 //==============================================================================
+// Distortion algorithm types
+enum class DistortionType
+{
+    Tanh = 0,
+    Foldback = 1,
+    Tube = 2
+};
+
+//==============================================================================
 class AudioPluginAudioProcessor final : public juce::AudioProcessor
 {
 public:
@@ -66,6 +75,12 @@ private:
     float currentSubOctave = 0.0f;
     float currentDryWet = 1.0f;
     float currentTone = 0.5f;
+    int currentAlgorithm = 0;
+
+    // Distortion processing methods
+    float applyTanhDistortion(float input, float drive, float asymmetry);
+    float applyFoldbackDistortion(float input, float drive, float asymmetry);
+    float applyTubeDistortion(float input, float drive, float asymmetry);
 
     // Octave divider state (per channel)
     struct OctaveDividerState {
